@@ -9,6 +9,7 @@ Requirements:
     pip install svg.path
 """
 
+import itertools
 from BeautifulSoup import BeautifulSoup
 from collections import OrderedDict
 from svg.path import parse_path
@@ -24,23 +25,49 @@ def get_segment_control_points(segment):
     Each control point is a pair of floats `(x, y)`.
 
     This does the minimum to support the paths in the map files.
-    In particular, it simply returns the endpoints of arc segments."""
+    In particular, it simply returns the endpoints of arc segments.
 
-    cpts = [getattr(segment, prop) for prop in SEGMENT_CTL_PT_PROPS if hasattr(segment, prop)]
+    Examples:
+    >>> get_segment_control_points(parse_path('M 10 20 L 30 40')[0])
+    [(10.0, 20.0), (30.0, 40.0)]
+    >>> get_segment_control_points(parse_path('m 10 20 l 30 40')[0])
+    [(10.0, 20.0), (40.0, 60.0)]
+    """
+
+    cpts = (getattr(segment, prop) for prop in SEGMENT_CTL_PT_PROPS if hasattr(segment, prop))
     return [(pt.real, pt.imag) for pt in cpts]
 
 
 def path_to_points(path):
     """Given an `svg.path` Path, return a list of its control points.
-    Each control point is a pair of floats `(x, y)`."""
+    Each control point is a pair of floats `(x, y)`.
 
-    return [pt
-            for segment in path
-            for pt in get_segment_control_points(segment)]
+    Examples:
+    >>> path_to_points(parse_path('M 10 20 30 40'))
+    [(10.0, 20.0), (30.0, 40.0)]
+    >>> path_to_points(parse_path('M 10 20 30 40 100 200'))
+    [(10.0, 20.0), (30.0, 40.0), (100.0, 200.0)]
+    """
+
+    pts = (pt
+           for segment in path
+           for pt in get_segment_control_points(segment))
+    # remove duplicates
+    return [pti.next() for _, pti in itertools.groupby(pts)]
 
 
 def svg_path_to_polygons(path_data):
-    """Return a list of polygons that collectively approximate the SVG path whose string is `path_data`."""
+    """Return a list of polygons that collectively approximate the SVG path whose string is `path_data`.
+    This handles just enough cases to parse the map files.
+
+    Examples:
+    >>> svg_path_to_polygons('m 10 20 30 40')
+    [[(10.0, 20.0), (40.0, 60.0)]]
+    >>> svg_path_to_polygons('m 10 20 30 40 z')
+    [[(10.0, 20.0), (40.0, 60.0), (10.0, 20.0)]]
+    >>> svg_path_to_polygons('m 10 20 30 40 z m 100 200 10 20')
+    [[(10.0, 20.0), (40.0, 60.0), (10.0, 20.0)], [(110.0, 220.0), (120.0, 240.0)]]
+    """
 
     # `svg.path` treats the Move command as though it were Line.
     # Split the path data, in order to collect one Path per contour.
@@ -54,7 +81,6 @@ def svg_path_to_polygons(path_data):
         path = parse_path(path_string)
         polygons.append(path_to_points(path))
         end_pt = path[-1].end
-        end_pt = path[0].start
         path_prefix = 'M %f,%f m' % (end_pt.real, end_pt.imag)
 
     return polygons
