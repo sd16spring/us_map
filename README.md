@@ -32,11 +32,17 @@ This code also demonstrates how to determine if the mouse is inside the state.
 
 ## API
 
-`us_map.states` is a dictionary *abbr* -> *shape*, where *state* is a two-letter
+`us_map.states` is a dictionary *abbr* -> *polygon_list*, where *state* is a two-letter
 [ANSI U.S. abbreviation](https://en.wikipedia.org/wiki/List_of_U.S._state_abbreviations#Table).
 
-*shape* is a list of polygons.
-Each polygon is a list of tuples (x, y), where x and y are floats.
+`us_map.counties_by_name` is a dictionary *county* -> *polygon*, where *county* is a string of the form
+"Norfolk, MA".
+
+`us_map.counties_by_name` is a dictionary *county_code* -> *polygon*, where *county_code* is an integer
+[FIPS county code](https://en.wikipedia.org/wiki/FIPS_county_code).
+
+Each *polygon* is a list of tuples (*x*, *y*), where *x* and *y* are float coordinates.
+  These coordinates only have meaning within the map: they aren't longitude and lattitude.
 
 Many states, such as Colorado, consist of a single polygon.
 Several, such as Massachusetts, consist of several.
@@ -46,5 +52,6 @@ Several, such as Massachusetts, consist of several.
 
 The Python files are released under the MIT License.
 
-`Blank_US_Map.svg` is from the Wikipedia ([source](https://commons.wikimedia.org/wiki/File:Blank_US_Map.svg)),
-and is licensed under the [GNU Free Documentation License](https://en.wikipedia.org/wiki/GNU_Free_Documentation_License).
+`Blank_US_Map.svg` ([source](https://commons.wikimedia.org/wiki/File:Blank_US_Map.svg)) and
+`USA_Counties_with_FIPS_and_names.svg` ([source](https://commons.wikimedia.org/wiki/File:USA_Counties_with_FIPS_and_names.svg))
+are from the Wikipedia and are licensed under the [GNU Free Documentation License](https://en.wikipedia.org/wiki/GNU_Free_Documentation_License).
