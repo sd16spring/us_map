@@ -14,7 +14,7 @@ from BeautifulSoup import BeautifulSoup
 from collections import OrderedDict
 from svg.path import parse_path
 
-__all__ = ['states', 'counties']
+__all__ = ['states', 'counties_by_fips', 'counties_by_name']
 
 SEGMENT_CTL_PT_PROPS = ['start', 'control', 'control1', 'control2', 'end']
 """An ordered list of names of `svg.path` properties that hold control points."""
